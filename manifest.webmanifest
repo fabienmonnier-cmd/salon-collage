@@ -1,0 +1,16 @@
+{
+  "name": "Salon Collage · Carnet fournisseurs",
+  "short_name": "Salon Collage",
+  "description": "Capture hors ligne des visites fournisseurs, photos et notes.",
+  "id": "./index.html",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8faf7",
+  "theme_color": "#123e3d",
+  "lang": "fr-CH",
+  "icons": [
+    {"src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

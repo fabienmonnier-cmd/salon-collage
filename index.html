@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#123e3d" />
+  <meta name="description" content="Fiches de visite fournisseurs collage : photos, notes, actions et export. Fonctionne hors ligne." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="icon" href="./icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+<link rel="stylesheet" href="./style.css" />
+  <title>Salon Collage · Capture</title>
+
+</head>
+<body>
+  <div class="app-shell">
+    <div id="topbar" class="topbar">
+      <div class="brand" role="button" tabindex="0" id="brandHome" aria-label="Accueil">
+        <span class="brand-mark" aria-hidden="true"><svg width="27" height="27" viewBox="0 0 28 28" fill="none"><rect x="5" y="8" width="12" height="12" rx="4" stroke="currentColor" stroke-width="2.4" transform="rotate(-35 11 14)"/><rect x="11" y="8" width="12" height="12" rx="4" stroke="currentColor" stroke-width="2.4" transform="rotate(-35 17 14)"/></svg></span>
+        <span class="brand-text"><b>Collage<span class="brand-dot">.</span></b><small>FIELD NOTES</small></span>
+      </div>
+      <div class="top-actions"><span class="network-badge" id="networkBadge"><span class="network-dot"></span><span id="networkText">Vérification...</span></span></div>
+    </div>
+
+    <main id="viewHome" class="view home-view">
+      <section class="hero">
+        <div class="eyebrow"><span class="eyebrow-line"></span> SALON PROFESSIONNEL · 2026</div>
+        <h1>Collecter l'essentiel.<br><em>Exploiter le meilleur.</em></h1>
+        <p>Une fiche rapide par fournisseur. Toutes les informations restent sur ce téléphone jusqu'à l'export.</p>
+        <button type="button" class="btn btn-accent hero-cta" id="newEntryHero"><span class="btn-icon">＋</span> Nouvelle visite <span class="btn-arrow">↗</span></button>
+      </section>
+
+      <section class="overview" aria-label="Résumé du salon">
+        <div class="overview-box"><span id="statTotal" class="overview-number">0</span><span class="overview-label">Fournisseurs</span></div>
+        <div class="overview-box"><span id="statInterest" class="overview-number">0</span><span class="overview-label">À approfondir</span></div>
+        <div class="overview-box"><span id="statActions" class="overview-number">0</span><span class="overview-label">Actions de suivi</span></div>
+      </section>
+
+      <section class="list-section">
+        <div class="section-heading"><div><div class="section-overline">CARNET DE SALON</div><h2>Visites fournisseurs</h2></div><button type="button" class="ghost-action" id="homeExport">Exporter <span>↗</span></button></div>
+        <label class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><circle cx="10.7" cy="10.7" r="6.8"/><path d="m16 16 5 5"/></svg><input id="searchInput" type="search" autocomplete="off" placeholder="Rechercher fournisseur ou technologie"/></label>
+        <div class="filter-strip" aria-label="Filtrer les visites"><button type="button" class="filter active" data-filter="all">Toutes</button><button type="button" class="filter" data-filter="high">Prioritaires</button><button type="button" class="filter" data-filter="todo">À suivre</button></div>
+        <div id="entriesList" class="entries-list"></div>
+        <div id="emptyState" class="empty-state" hidden><div class="empty-visual"><svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="2"><rect x="15" y="15" width="30" height="30" rx="9" transform="rotate(-18 30 30)"/><path d="M24 30h12M30 24v12"/></svg></div><h3>Votre carnet est prêt.</h3><p>Commencez par un fournisseur. Quelques informations suffisent.</p><button type="button" class="btn btn-outline" id="newEntryEmpty">Créer la première fiche</button></div>
+      </section>
+      <div class="bottom-space"></div>
+    </main>
+
+    <main id="viewEdit" class="view edit-view" hidden>
+      <div class="editor-toolbar"><button type="button" class="back-button" id="backHome"><span>←</span> Visites</button><span class="save-status" id="saveStatus">Enregistré sur ce téléphone</span></div>
+      <section class="editor-title"><div class="section-overline" id="entryCounter">FICHE FOURNISSEUR</div><h1 id="editorHeading">Nouvelle visite</h1><p>Remplissez l'utile. Les informations s'enregistrent automatiquement.</p></section>
+      <form id="entryForm" autocomplete="off">
+        <section class="form-card">
+          <div class="form-section-head"><span class="section-index">01</span><div><h2>Qui & quoi</h2><p>Identifier le fournisseur et la solution</p></div></div>
+          <div class="field"><label for="supplier">Fournisseur <span class="required">*</span></label><input type="text" id="supplier" name="supplier" placeholder="Ex. : Henkel, DELO, Dymax..." maxlength="140" /></div>
+          <div class="field-grid"><div class="field"><label for="contact">Contact / société</label><input type="text" id="contact" name="contact" placeholder="Nom, e-mail, stand..." maxlength="250" /></div><div class="field"><label for="reference">Solution / référence</label><input type="text" id="reference" name="reference" placeholder="Produit, procédé..." maxlength="220" /></div></div>
+          <div class="media-section"><div class="media-heading"><b>Photos</b><span>Étiquettes, technologie, carte de visite</span></div><div class="photo-actions"><label for="photoProduct" class="photo-capture"><span class="capture-icon">◉</span><span>Solution / produit</span><small>Prendre une photo</small></label><label for="photoContact" class="photo-capture"><span class="capture-icon">▣</span><span>Carte de visite</span><small>Prendre une photo</small></label></div><input type="file" id="photoProduct" accept="image/*" capture="environment" class="visually-hidden"/><input type="file" id="photoContact" accept="image/*" capture="environment" class="visually-hidden"/><div class="photo-gallery" id="photoGallery"></div></div>
+        </section>
+
+        <section class="form-card">
+          <div class="form-section-head"><span class="section-index">02</span><div><h2>Pourquoi c'est intéressant</h2><p>Une observation exploitable en 20 secondes</p></div></div>
+          <div class="field"><label for="application">Application possible</label><textarea name="application" id="application" rows="2" placeholder="Ex. : collage saphir / boîtier, maintien, étanchéité..."></textarea></div>
+          <div class="field"><label for="benefit">Intérêt / gain potentiel</label><textarea name="benefit" id="benefit" rows="2" placeholder="Ex. : supprimer le plasma, réduire le rebut, gagner en cadence..."></textarea></div>
+          <div class="field"><label for="notes">Notes libres</label><textarea name="notes" id="notes" rows="3" placeholder="Ce qu'il faut retenir de l'échange..."></textarea></div>
+          <div class="audio-wrap"><div><b>Mémo vocal</b><p>Audio brut enregistré localement — pas de transcription ni de réseau nécessaire.</p></div><button type="button" id="audioButton" class="btn btn-audio">● Enregistrer</button></div><div id="audioList" class="audio-list"></div>
+        </section>
+
+        <section class="form-card">
+          <div class="form-section-head"><span class="section-index">03</span><div><h2>Et maintenant ?</h2><p>Décider de la prochaine étape</p></div></div>
+          <div class="field"><label for="priority">Niveau d'intérêt</label><select id="priority" name="priority"><option value="medium">Intéressant — à regarder</option><option value="high">Prioritaire — à approfondir</option><option value="low">Faible — information seulement</option></select></div>
+          <div class="field"><label for="nextAction">Action à suivre</label><select id="nextAction" name="nextAction"><option value="">À définir</option><option value="samples">Demander des échantillons</option><option value="test">Organiser un essai</option><option value="documentation">Recevoir la documentation</option><option value="contact">Recontacter le fournisseur</option><option value="none">Aucune action</option></select></div>
+          <div class="field"><label for="actionDetail">Précision / échéance</label><input id="actionDetail" name="actionDetail" placeholder="Ex. : demander des échantillons en semaine 47" maxlength="250"/></div>
+        </section>
+
+        <details class="advanced-card" id="advancedDetails"><summary><span><b>Classification technique</b><small>Facultative, plutôt à compléter au retour</small></span><span class="details-arrow">＋</span></summary><div class="advanced-inner"><div class="field"><label>Fonction du collage</label><div class="chip-group" id="functionChips"></div></div><div class="field"><label>Liaison</label><div class="chip-group" id="liaisonChips"></div></div><div class="field"><label>Industrialisation</label><div class="chip-group" id="processChips"></div></div><div class="field"><label>Préparation de surface</label><div class="chip-group" id="surfaceChips"></div></div></div></details>
+        <div class="editor-footer"><button type="button" class="btn btn-danger-ghost" id="deleteEntry">Supprimer cette fiche</button><button type="button" class="btn btn-primary" id="finishEdit">Terminer la visite <span>↗</span></button></div>
+      </form>
+      <div class="bottom-space"></div>
+    </main>
+
+    <main id="viewExport" class="view export-view" hidden>
+      <div class="editor-toolbar"><button type="button" class="back-button" id="exportBack"><span>←</span> Visites</button></div>
+      <section class="editor-title"><div class="section-overline">SAUVEGARDE & TRANSMISSION</div><h1>Tout reprendre au bureau.</h1><p>Le site ne transfère aucune donnée. Vous choisissez ce que vous exportez.</p></section>
+      <div class="export-card primary-export"><div class="export-symbol">↓</div><h2>Exporter le salon</h2><p>Un fichier ZIP contenant le tableau CSV pour Excel, les photos, les enregistrements audio et une sauvegarde JSON complète.</p><button type="button" class="btn btn-primary full" id="exportZip">Télécharger le ZIP complet <span>↗</span></button></div>
+      <div class="export-card"><div class="export-symbol mini">▤</div><h2>Rapport pour OneNote</h2><p>Un rapport HTML complet avec une section par fournisseur et les photos intégrées. Sur le PC, ouvrir le rapport et l’imprimer en PDF, puis l’insérer dans OneNote. Les mémos vocaux restent dans le ZIP.</p><button type="button" class="btn btn-outline full" id="exportOneNote">Télécharger le rapport OneNote</button></div>
+      <div class="export-card"><div class="export-symbol mini">▦</div><h2>Tableau seul</h2><p>Pour une reprise rapide de la cartographie sur le PC.</p><button type="button" class="btn btn-outline full" id="exportCsv">Exporter CSV (Excel)</button></div>
+      <div class="export-card"><div class="export-symbol mini">↶</div><h2>Restaurer une sauvegarde</h2><p>Importer un fichier <code>sauvegarde.json</code> précédemment exporté. Les identifiants identiques seront remplacés.</p><label for="importJson" class="btn btn-outline full file-button">Importer un JSON</label><input id="importJson" type="file" accept=".json,application/json" class="visually-hidden" /></div>
+      <div class="safety-note"><b>Important avant le salon</b><p>Installez l'application en ligne, puis testez une visite, une photo et l'export avec le mode avion activé. Les fiches sont stockées dans ce navigateur : ne supprimez pas les données du site avant d'avoir exporté. En cas de politique d'entreprise restrictive, ne saisissez aucune information confidentielle sur un téléphone personnel.</p></div>
+      <div class="bottom-space"></div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <nav class="bottom-nav" aria-label="Navigation"><button id="tabHome" class="nav-item active" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Visites</span></button><button id="tabNew" class="nav-item nav-add" type="button"><span class="nav-big-plus">＋</span><span>Nouvelle</span></button><button id="tabExport" class="nav-item" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v13m0 0 5-5m-5 5-5-5M4 17v3h16v-3"/></svg></span><span>Exporter</span></button></nav>
+  </div>
+<script defer src="./app.js"></script>
+</body>
+</html>
