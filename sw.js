@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salon-collage-v2-20261104';
-const APP_SHELL = ['./', './index.html', './style.css', './app.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'salon-collage-v3-20261104-plan';
+const APP_SHELL = ['./', './index.html', './style.css', './app.js', './wayfinding.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
