@@ -2,7 +2,7 @@
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const KEYS = ['supplier','contact','reference','application','benefit','notes','priority','nextAction','actionDetail'];
+const KEYS = ['supplier','booth','contact','reference','application','benefit','notes','priority','nextAction','actionDetail'];
 const TAXONOMY = {
   functions: ['Positionnement','Structurel','Optique','Étanchéité','Blocage / freinage','Protection','Maintien'],
   liaison: ['Rigide','Semi-souple','Souple'],
@@ -12,11 +12,11 @@ const TAXONOMY = {
 const TAX_DOM = {functions:'#functionChips',liaison:'#liaisonChips',process:'#processChips',surface:'#surfaceChips'};
 const ACTION_LABELS = {samples:'Échantillons',test:'Essai à organiser',documentation:'Documentation',contact:'À recontacter',none:'Aucune action','':'À définir'};
 const PRIORITY_LABELS = {high:'Prioritaire',medium:'À regarder',low:'Information'};
-const VIEWS = ['Home','Edit','Export'];
+const VIEWS = ['Home','Edit','Plan','Export'];
 const initialEntry = () => ({
   id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+'-'+Math.random().toString(36).slice(2),
   createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
-  supplier:'',contact:'',reference:'',application:'',benefit:'',notes:'',priority:'medium',nextAction:'',actionDetail:'',
+  supplier:'',booth:'',contact:'',reference:'',application:'',benefit:'',notes:'',priority:'medium',nextAction:'',actionDetail:'',
   functions:[],liaison:[],process:[],surface:[]
 });
 let db, entries=[], selectedId=null, saveTimer=null, selectedFilter='all', activeView='Home', recorder=null, audioStream=null, audioChunks=[];
@@ -53,7 +53,7 @@ function mediaCount(entryId){return transact('media','readonly',(s,set)=>{let r=
 async function refreshEntries(){entries=(await storeAll('entries')).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));renderList();}
 function getCurrent(){return entries.find(e=>e.id===selectedId);}
 function updateNetwork(){const offline=!navigator.onLine;const badge=$('#networkBadge');badge.classList.toggle('offline',offline);$('#networkText').textContent=offline?'Hors connexion':'Stockage local';}
-function setView(name){activeView=name;VIEWS.forEach(v=>$('#view'+v).hidden=v!==name);$('#tabHome').classList.toggle('active',name==='Home');$('#tabExport').classList.toggle('active',name==='Export');window.scrollTo({top:0,behavior:'instant'});}
+function setView(name){activeView=name;VIEWS.forEach(v=>$('#view'+v).hidden=v!==name);$('#tabHome').classList.toggle('active',name==='Home');$('#tabPlan').classList.toggle('active',name==='Plan');$('#tabExport').classList.toggle('active',name==='Export');window.scrollTo({top:0,behavior:'instant'});}
 
 function renderList(){
   $('#statTotal').textContent=entries.filter(e=>e.supplier.trim()).length;
@@ -64,7 +64,7 @@ function renderList(){
     if(!e.supplier.trim())return false;
     if(selectedFilter==='high'&&e.priority!=='high')return false;
     if(selectedFilter==='todo'&&(!e.nextAction||e.nextAction==='none'))return false;
-    return !term || [e.supplier,e.contact,e.reference,e.application,e.benefit].some(x=>String(x||'').toLocaleLowerCase('fr').includes(term));
+    return !term || [e.supplier,e.booth,e.contact,e.reference,e.application,e.benefit].some(x=>String(x||'').toLocaleLowerCase('fr').includes(term));
   });
   $('#emptyState').hidden=!!visible.length;
   $('#entriesList').innerHTML=visible.map(e=>{
@@ -132,7 +132,7 @@ async function returnHome(){
   await flushSave();
   // Remove an entirely untouched draft; never hide real captures from an export.
   const entry=getCurrent();
-  if(!recordingInProgress && entry && ![entry.supplier,entry.contact,entry.reference,entry.application,entry.benefit,entry.notes,entry.actionDetail].some(v=>String(v||'').trim()) && !entry.nextAction && entry.priority==='medium' && !(await mediaCount(entry.id))){
+  if(!recordingInProgress && entry && ![entry.supplier,entry.booth,entry.contact,entry.reference,entry.application,entry.benefit,entry.notes,entry.actionDetail].some(v=>String(v||'').trim()) && !entry.nextAction && entry.priority==='medium' && !(await mediaCount(entry.id))){
     await storeDelete('entries',entry.id);
   }
   selectedId=null;await refreshEntries();setView('Home');
@@ -207,7 +207,7 @@ async function toggleRecording(){
 function stopRecording(){if(recorder?.state==='recording')recorder.stop();}
 
 function toCsv(rows){
-  const columns=[['Date','createdAt'],['Fournisseur','supplier'],['Contact','contact'],['Solution / référence','reference'],['Application','application'],['Intérêt / gain','benefit'],['Notes','notes'],['Priorité','priority'],['Action','nextAction'],['Précision action','actionDetail'],['Axe 1 Fonction','functions'],['Axe 2 Liaison','liaison'],['Axe 3 Industrialisation','process'],['Axe 4 Surface','surface']];
+  const columns=[['Date','createdAt'],['Fournisseur','supplier'],['Stand','booth'],['Contact','contact'],['Solution / référence','reference'],['Application','application'],['Intérêt / gain','benefit'],['Notes','notes'],['Priorité','priority'],['Action','nextAction'],['Précision action','actionDetail'],['Axe 1 Fonction','functions'],['Axe 2 Liaison','liaison'],['Axe 3 Industrialisation','process'],['Axe 4 Surface','surface']];
   return '\ufeff'+[columns.map(x=>csvSafe(x[0])).join(';'),...rows.map(row=>columns.map(([,k])=>csvSafe(Array.isArray(row[k])?row[k].join(' / '):k==='nextAction'?(ACTION_LABELS[row[k]]||''):k==='priority'?(PRIORITY_LABELS[row[k]]||''):row[k])).join(';'))].join('\r\n');
 }
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30_000);}
@@ -233,7 +233,7 @@ async function buildOneNoteHtml(allMedia){
     const audioCount=allMedia.filter(m=>m.entryId===e.id&&m.kind==='audio').length;
     const axes=[['Fonction',e.functions],['Liaison',e.liaison],['Industrialisation',e.process],['Préparation de surface',e.surface]].filter(([,v])=>Array.isArray(v)&&v.length).map(([k,v])=>cell(k,v.join(', '))).join('');
     return `<section class="supplier"><div class="section-head"><span>FICHE ${i+1} / ${sorted.length}</span><span>${escapeHtml(displayDate(e.createdAt))}</span></div><h2>${escapeHtml(e.supplier||'Fournisseur non renseigné')}</h2><div class="meta"><span class="chip">${escapeHtml(PRIORITY_LABELS[e.priority]||'À regarder')}</span><span class="chip action">${escapeHtml(ACTION_LABELS[e.nextAction]||'À définir')}</span></div>
-    <div class="details">${cell('Contact / société',e.contact)}${cell('Solution / référence',e.reference)}${cell('Application potentielle',e.application)}${cell('Intérêt / gain potentiel',e.benefit)}${cell('Notes de visite',e.notes)}${cell('Suite à donner',ACTION_LABELS[e.nextAction]||'À définir')}${cell('Précision / échéance',e.actionDetail)}${axes}</div>
+    <div class="details">${cell('Stand',e.booth)}${cell('Contact / société',e.contact)}${cell('Solution / référence',e.reference)}${cell('Application potentielle',e.application)}${cell('Intérêt / gain potentiel',e.benefit)}${cell('Notes de visite',e.notes)}${cell('Suite à donner',ACTION_LABELS[e.nextAction]||'À définir')}${cell('Précision / échéance',e.actionDetail)}${axes}</div>
     ${contentPhotos?`<div class="photos">${contentPhotos}</div>`:''}${audioCount?`<div class="audio-notice">${audioCount} mémo(s) audio — fichiers inclus séparément dans le ZIP complet.</div>`:''}</section>`;
   }).join('\n');
   return `<!doctype html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Salon Collage – Rapport OneNote</title><style>
