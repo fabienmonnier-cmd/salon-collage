@@ -54,6 +54,7 @@
         <section class="form-card">
           <div class="form-section-head"><span class="section-index">01</span><div><h2>Qui & quoi</h2><p>Identifier le fournisseur et la solution</p></div></div>
           <div class="field"><label for="supplier">Fournisseur <span class="required">*</span></label><input type="text" id="supplier" name="supplier" placeholder="Ex. : Henkel, DELO, Dymax..." maxlength="140" /></div>
+          <div class="field"><label for="booth">Numéro de stand</label><input type="text" id="booth" name="booth" maxlength="9" placeholder="Ex. 810" /></div>
           <div class="field-grid"><div class="field"><label for="contact">Contact / société</label><input type="text" id="contact" name="contact" placeholder="Nom, e-mail, stand..." maxlength="250" /></div><div class="field"><label for="reference">Solution / référence</label><input type="text" id="reference" name="reference" placeholder="Produit, procédé..." maxlength="220" /></div></div>
           <div class="media-section"><div class="media-heading"><b>Photos</b><span>Étiquettes, technologie, carte de visite</span></div><div class="photo-actions"><label for="photoProduct" class="photo-capture"><span class="capture-icon">◉</span><span>Solution / produit</span><small>Prendre une photo</small></label><label for="photoContact" class="photo-capture"><span class="capture-icon">▣</span><span>Carte de visite</span><small>Prendre une photo</small></label></div><input type="file" id="photoProduct" accept="image/*" capture="environment" class="visually-hidden"/><input type="file" id="photoContact" accept="image/*" capture="environment" class="visually-hidden"/><div class="photo-gallery" id="photoGallery"></div></div>
         </section>
@@ -79,6 +80,56 @@
       <div class="bottom-space"></div>
     </main>
 
+    <main id="viewPlan" class="view plan-view" hidden>
+      <div class="editor-toolbar"><button type="button" class="back-button" id="planBack"><span>←</span> Visites</button><span class="save-status">Hall 1 · Stuttgart 2026</span></div>
+      <section class="editor-title">
+        <div class="section-overline">10–12 NOVEMBRE · ADHESIVES & BONDING EXPO</div>
+        <h1>Se repérer dans le hall.</h1>
+        <p>Indiquez le stand à côté de vous puis recherchez votre destination. La position est repérée par un stand, pas par le GPS.</p>
+      </section>
+      <section class="plan-card">
+        <div class="plan-card-heading"><span class="plan-step">01</span><div><h2>Où suis-je ?</h2><p>Repérage au stand le plus proche</p></div></div>
+        <label class="plan-label" for="planCurrentStand">Numéro visible sur le stand</label>
+        <div class="plan-inline"><input id="planCurrentStand" type="text" inputmode="text" autocapitalize="characters" placeholder="Ex. 725" maxlength="9" aria-label="Mon stand actuel" /><button type="button" class="btn btn-primary" id="planSetCurrent">Me placer</button></div>
+        <button class="plan-quiet" type="button" id="planScanQR">▣ Scanner un QR de stand (si présent)</button>
+        <div id="planScanPanel" hidden><video id="planCamera" autoplay muted playsinline aria-label="Caméra pour scanner un QR"></video><button type="button" class="btn btn-outline full" id="planStopScan">Arrêter la caméra</button></div>
+        <p class="plan-hint">Le scan ne fonctionne que si un QR contient réellement le numéro du stand ; il ne permet pas de reconnaître une enseigne photographiée.</p>
+      </section>
+      <section class="plan-card">
+        <div class="plan-card-heading"><span class="plan-step">02</span><div><h2>Chez qui aller ?</h2><p>Fournisseur ou numéro de stand</p></div></div>
+        <label class="plan-label" for="planQuery">Rechercher un fournisseur</label>
+        <input type="search" id="planQuery" placeholder="Ex. ADESIA, ASTORPLAST, 810…" autocomplete="off" />
+        <div id="planResults" class="plan-results" role="region" aria-live="polite"></div>
+        <a id="planDirectory" class="plan-quiet plan-link" target="_blank" rel="noopener noreferrer" href="https://www.adhesivesandbondingexpo-europe.com/exhibitor-list/">Consulter l’annuaire officiel complet ↗</a>
+        <div class="plan-fields">
+          <div><label class="plan-label" for="planDestinationName">Fournisseur choisi</label><input id="planDestinationName" type="text" placeholder="Nom du fournisseur" maxlength="140" /></div>
+          <div><label class="plan-label" for="planDestinationStand">Stand</label><input id="planDestinationStand" type="text" placeholder="810" maxlength="9" /></div>
+        </div>
+        <button type="button" class="btn btn-primary full" id="planSetTarget">Définir la destination</button>
+      </section>
+      <section class="plan-card plan-route">
+        <div class="plan-card-heading"><span class="plan-step">03</span><div><h2>Repérer le trajet</h2><p>Points de départ et d’arrivée</p></div></div>
+        <div class="plan-points">
+          <div class="plan-point"><span class="plan-point-dot is-start"></span><div><small>DÉPART · POSITION MANUELLE</small><b id="planPositionLabel">Position non définie</b></div></div>
+          <div class="plan-point"><span class="plan-point-dot is-finish"></span><div><small>DESTINATION</small><b id="planTargetLabel">Destination à choisir</b></div></div>
+        </div>
+        <p id="planGuidance" class="plan-guidance">Chercher un fournisseur ou saisir son stand.</p>
+        <a id="planLocateStart" target="_blank" rel="noopener noreferrer" class="btn btn-outline full plan-anchor-link" href="https://abeteefoameurope26.mapyourshow.com/8_0/exhview/index.cfm">Ouvrir le plan général ↗</a>
+        <a id="planLocateTarget" target="_blank" rel="noopener noreferrer" class="btn btn-primary full plan-anchor-link" href="https://abeteefoameurope26.mapyourshow.com/8_0/exhview/index.cfm">Chercher le fournisseur sur le plan ↗</a>
+        <div class="plan-inline">
+          <button type="button" class="btn btn-outline" id="planArrived">Je suis arrivé</button>
+          <button type="button" class="btn btn-accent" id="planCreateVisit">Créer sa fiche</button>
+        </div>
+        <p class="plan-hint">Le plan officiel montre les stands ; l’application ne calcule pas encore de chemin entre les allées. Aucun suivi automatique de la position.</p>
+      </section>
+      <section class="plan-card">
+        <div class="plan-card-heading"><span class="plan-step">↗</span><div><h2>Plan officiel 2026</h2><p>Messe Stuttgart · hall 1</p></div></div>
+        <a id="planOpenMap" target="_blank" rel="noopener noreferrer" class="btn btn-outline full" href="https://abeteefoameurope26.mapyourshow.com/8_0/exhview/index.cfm">Ouvrir le plan interactif en plein écran ↗</a>
+        <details id="planFrameWrapper" class="plan-frame-details"><summary>Afficher le plan dans l’application</summary><iframe id="planMapFrame" title="Plan officiel des exposants" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><p class="plan-hint">Si le plan intégré est bloqué par l’organisateur, utilisez le bouton plein écran ci-dessus.</p></details>
+      </section>
+      <div class="bottom-space"></div>
+    </main>
+
     <main id="viewExport" class="view export-view" hidden>
       <div class="editor-toolbar"><button type="button" class="back-button" id="exportBack"><span>←</span> Visites</button></div>
       <section class="editor-title"><div class="section-overline">SAUVEGARDE & TRANSMISSION</div><h1>Tout reprendre au bureau.</h1><p>Le site ne transfère aucune donnée. Vous choisissez ce que vous exportez.</p></section>
@@ -91,8 +142,9 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <nav class="bottom-nav" aria-label="Navigation"><button id="tabHome" class="nav-item active" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Visites</span></button><button id="tabNew" class="nav-item nav-add" type="button"><span class="nav-big-plus">＋</span><span>Nouvelle</span></button><button id="tabExport" class="nav-item" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v13m0 0 5-5m-5 5-5-5M4 17v3h16v-3"/></svg></span><span>Exporter</span></button></nav>
+    <nav class="bottom-nav" aria-label="Navigation"><button id="tabHome" class="nav-item active" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span>Visites</span></button><button id="tabPlan" class="nav-item" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg></span><span>Plan</span></button><button id="tabNew" class="nav-item nav-add" type="button"><span class="nav-big-plus">＋</span><span>Nouvelle</span></button><button id="tabExport" class="nav-item" type="button"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v13m0 0 5-5m-5 5-5-5M4 17v3h16v-3"/></svg></span><span>Exporter</span></button></nav>
   </div>
 <script defer src="./app.js"></script>
+<script defer src="./wayfinding.js"></script>
 </body>
 </html>
