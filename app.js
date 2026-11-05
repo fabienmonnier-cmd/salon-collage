@@ -2,14 +2,16 @@
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const KEYS = ['supplier','booth','contact','reference','application','benefit','notes','priority','nextAction','actionDetail'];
+const KEYS = ['supplier','booth','contact','reference','application','benefit','notes','priority','nextAction','actionDetail','solutionOther','tapeDetails','activationOther','activationConditions','functionsOther','liaisonOther','processOther','surfaceOther','technicalNotes'];
 const TAXONOMY = {
-  functions: ['Positionnement','Structurel','Optique','Étanchéité','Blocage / freinage','Protection','Maintien'],
-  liaison: ['Rigide','Semi-souple','Souple'],
-  process: ['Manuel','Jetting','Dispensing','Robotisé','UV LED','UV Mercure','1K','2K'],
-  surface: ['IPA','Dégraissage','Plasma','Corona','Primaire','Micro-abrasion','Nettoyage optique']
+  solution: ['Colle','Scotch / ruban adhésif','Film / pastille adhésive','Autre'],
+  activation: ['UV','Chaleur','Pression (PSA)','Humidité','Air ambiant','Mélange 2K','Hotmelt (refroidissement)','Autre'],
+  functions: ['Positionnement','Structurel','Optique','Étanchéité','Blocage / freinage','Protection','Maintien','Autre'],
+  liaison: ['Rigide','Semi-souple','Souple','Autre'],
+  process: ['Manuel','Jetting','Dispensing','Robotisé','UV LED','UV Mercure','1K','2K','Autre'],
+  surface: ['IPA','Dégraissage','Plasma','Corona','Primaire','Micro-abrasion','Nettoyage optique','Autre']
 };
-const TAX_DOM = {functions:'#functionChips',liaison:'#liaisonChips',process:'#processChips',surface:'#surfaceChips'};
+const TAX_DOM = {solution:'#solutionChips',activation:'#activationChips',functions:'#functionChips',liaison:'#liaisonChips',process:'#processChips',surface:'#surfaceChips'};
 const ACTION_LABELS = {samples:'Échantillons',test:'Essai à organiser',documentation:'Documentation',contact:'À recontacter',none:'Aucune action','':'À définir'};
 const PRIORITY_LABELS = {high:'Prioritaire',medium:'À regarder',low:'Information'};
 const VIEWS = ['Home','Edit','Plan','Export'];
@@ -17,7 +19,8 @@ const initialEntry = () => ({
   id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+'-'+Math.random().toString(36).slice(2),
   createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
   supplier:'',booth:'',contact:'',reference:'',application:'',benefit:'',notes:'',priority:'medium',nextAction:'',actionDetail:'',
-  functions:[],liaison:[],process:[],surface:[]
+  solutionOther:'',tapeDetails:'',activationOther:'',activationConditions:'',functionsOther:'',liaisonOther:'',processOther:'',surfaceOther:'',technicalNotes:'',
+  solution:[],activation:[],functions:[],liaison:[],process:[],surface:[]
 });
 let db, entries=[], selectedId=null, saveTimer=null, selectedFilter='all', activeView='Home', recorder=null, audioStream=null, audioChunks=[];
 let toastTimer, editorUpdateCounter=0;
@@ -132,7 +135,7 @@ async function returnHome(){
   await flushSave();
   // Remove an entirely untouched draft; never hide real captures from an export.
   const entry=getCurrent();
-  if(!recordingInProgress && entry && ![entry.supplier,entry.booth,entry.contact,entry.reference,entry.application,entry.benefit,entry.notes,entry.actionDetail].some(v=>String(v||'').trim()) && !entry.nextAction && entry.priority==='medium' && !(await mediaCount(entry.id))){
+  if(!recordingInProgress && entry && ![entry.supplier,entry.booth,entry.contact,entry.reference,entry.application,entry.benefit,entry.notes,entry.actionDetail,...KEYS.filter(k=>k.endsWith('Other')||['tapeDetails','activationConditions','technicalNotes'].includes(k)).map(k=>entry[k])].some(v=>String(v||'').trim()) && !Object.keys(TAX_DOM).some(k=>(entry[k]||[]).length) && !entry.nextAction && entry.priority==='medium' && !(await mediaCount(entry.id))){
     await storeDelete('entries',entry.id);
   }
   selectedId=null;await refreshEntries();setView('Home');
@@ -207,7 +210,7 @@ async function toggleRecording(){
 function stopRecording(){if(recorder?.state==='recording')recorder.stop();}
 
 function toCsv(rows){
-  const columns=[['Date','createdAt'],['Fournisseur','supplier'],['Stand','booth'],['Contact','contact'],['Solution / référence','reference'],['Application','application'],['Intérêt / gain','benefit'],['Notes','notes'],['Priorité','priority'],['Action','nextAction'],['Précision action','actionDetail'],['Axe 1 Fonction','functions'],['Axe 2 Liaison','liaison'],['Axe 3 Industrialisation','process'],['Axe 4 Surface','surface']];
+  const columns=[['Date','createdAt'],['Fournisseur','supplier'],['Stand','booth'],['Contact','contact'],['Solution / référence','reference'],['Application','application'],['Intérêt / gain','benefit'],['Notes','notes'],['Priorité','priority'],['Action','nextAction'],['Précision action','actionDetail'],['Nature de solution','solution'],['Nature - autre','solutionOther'],['Ruban / film - caractéristiques','tapeDetails'],['Prise / activation','activation'],['Activation - autre','activationOther'],['Conditions de prise','activationConditions'],['Axe 1 Fonction','functions'],['Fonction - autre','functionsOther'],['Axe 2 Liaison','liaison'],['Liaison - autre','liaisonOther'],['Axe 3 Industrialisation','process'],['Industrialisation - autre','processOther'],['Axe 4 Surface','surface'],['Surface - autre','surfaceOther'],['Notes techniques','technicalNotes']];
   return '\ufeff'+[columns.map(x=>csvSafe(x[0])).join(';'),...rows.map(row=>columns.map(([,k])=>csvSafe(Array.isArray(row[k])?row[k].join(' / '):k==='nextAction'?(ACTION_LABELS[row[k]]||''):k==='priority'?(PRIORITY_LABELS[row[k]]||''):row[k])).join(';'))].join('\r\n');
 }
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30_000);}
@@ -231,9 +234,9 @@ async function buildOneNoteHtml(allMedia){
   const rows=sorted.map((e,i)=>{
     const contentPhotos=(photos.get(e.id)||[]).map(p=>`<figure><img src="${p.data}" alt="${p.kind==='contact'?'Carte de visite':'Solution / produit'}"><figcaption>${p.kind==='contact'?'Carte de visite':'Solution / produit'}</figcaption></figure>`).join('');
     const audioCount=allMedia.filter(m=>m.entryId===e.id&&m.kind==='audio').length;
-    const axes=[['Fonction',e.functions],['Liaison',e.liaison],['Industrialisation',e.process],['Préparation de surface',e.surface]].filter(([,v])=>Array.isArray(v)&&v.length).map(([k,v])=>cell(k,v.join(', '))).join('');
+    const axes=[['Nature de solution',e.solution],['Prise / activation',e.activation],['Fonction',e.functions],['Liaison',e.liaison],['Industrialisation',e.process],['Préparation de surface',e.surface]].filter(([,v])=>Array.isArray(v)&&v.length).map(([k,v])=>cell(k,v.join(', '))).join('');
     return `<section class="supplier"><div class="section-head"><span>FICHE ${i+1} / ${sorted.length}</span><span>${escapeHtml(displayDate(e.createdAt))}</span></div><h2>${escapeHtml(e.supplier||'Fournisseur non renseigné')}</h2><div class="meta"><span class="chip">${escapeHtml(PRIORITY_LABELS[e.priority]||'À regarder')}</span><span class="chip action">${escapeHtml(ACTION_LABELS[e.nextAction]||'À définir')}</span></div>
-    <div class="details">${cell('Stand',e.booth)}${cell('Contact / société',e.contact)}${cell('Solution / référence',e.reference)}${cell('Application potentielle',e.application)}${cell('Intérêt / gain potentiel',e.benefit)}${cell('Notes de visite',e.notes)}${cell('Suite à donner',ACTION_LABELS[e.nextAction]||'À définir')}${cell('Précision / échéance',e.actionDetail)}${axes}</div>
+    <div class="details">${cell('Stand',e.booth)}${cell('Contact / société',e.contact)}${cell('Solution / référence',e.reference)}${cell('Application potentielle',e.application)}${cell('Intérêt / gain potentiel',e.benefit)}${cell('Notes de visite',e.notes)}${cell('Suite à donner',ACTION_LABELS[e.nextAction]||'À définir')}${cell('Précision / échéance',e.actionDetail)}${axes}${cell('Solution – autre',e.solutionOther)}${cell('Scotch / ruban – caractéristiques',e.tapeDetails)}${cell('Activation – autre',e.activationOther)}${cell('Conditions de prise',e.activationConditions)}${cell('Fonction – autre',e.functionsOther)}${cell('Liaison – autre',e.liaisonOther)}${cell('Industrialisation – autre',e.processOther)}${cell('Préparation de surface – autre',e.surfaceOther)}${cell('Notes techniques',e.technicalNotes)}</div>
     ${contentPhotos?`<div class="photos">${contentPhotos}</div>`:''}${audioCount?`<div class="audio-notice">${audioCount} mémo(s) audio — fichiers inclus séparément dans le ZIP complet.</div>`:''}</section>`;
   }).join('\n');
   return `<!doctype html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Salon Collage – Rapport OneNote</title><style>
