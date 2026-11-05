@@ -74,7 +74,26 @@
           <div class="field"><label for="actionDetail">Précision / échéance</label><input id="actionDetail" name="actionDetail" placeholder="Ex. : demander des échantillons en semaine 47" maxlength="250"/></div>
         </section>
 
-        <details class="advanced-card" id="advancedDetails"><summary><span><b>Classification technique</b><small>Facultative, plutôt à compléter au retour</small></span><span class="details-arrow">＋</span></summary><div class="advanced-inner"><div class="field"><label>Fonction du collage</label><div class="chip-group" id="functionChips"></div></div><div class="field"><label>Liaison</label><div class="chip-group" id="liaisonChips"></div></div><div class="field"><label>Industrialisation</label><div class="chip-group" id="processChips"></div></div><div class="field"><label>Préparation de surface</label><div class="chip-group" id="surfaceChips"></div></div></div></details>
+        <details class="advanced-card" id="advancedDetails">
+          <summary><span><b>Spécifications techniques</b><small>Facultatives — à compléter au salon ou au retour</small></span><span class="details-arrow">＋</span></summary>
+          <div class="advanced-inner">
+            <div class="field"><label>Nature de la solution</label><div class="chip-group" id="solutionChips"></div></div>
+            <div class="field"><label for="solutionOther">Nature — autre (préciser)</label><input id="solutionOther" name="solutionOther" placeholder="Autre technologie, matériau adhésif…" maxlength="250" /></div>
+            <div class="field"><label for="tapeDetails">Scotch / ruban / film — caractéristiques</label><textarea id="tapeDetails" name="tapeDetails" rows="2" placeholder="Support, épaisseur, adhésif, largeur, double-face, prédécoupe…"></textarea></div>
+            <div class="field"><label>Prise, durcissement ou activation</label><div class="chip-group" id="activationChips"></div></div>
+            <div class="field"><label for="activationOther">Prise / activation — autre (préciser)</label><input id="activationOther" name="activationOther" placeholder="Autre méthode ou mécanisme de prise…" maxlength="250" /></div>
+            <div class="field"><label for="activationConditions">Conditions de prise / activation</label><textarea id="activationConditions" name="activationConditions" rows="2" placeholder="Température, durée, longueur d’onde, dose UV, pression, humidité…"></textarea></div>
+            <div class="field"><label>Fonction du collage</label><div class="chip-group" id="functionChips"></div></div>
+            <div class="field"><label for="functionsOther">Fonction — autre (préciser)</label><input id="functionsOther" name="functionsOther" maxlength="250" placeholder="Autre fonction…" /></div>
+            <div class="field"><label>Liaison</label><div class="chip-group" id="liaisonChips"></div></div>
+            <div class="field"><label for="liaisonOther">Liaison — autre (préciser)</label><input id="liaisonOther" name="liaisonOther" maxlength="250" placeholder="Autre type de liaison…" /></div>
+            <div class="field"><label>Industrialisation</label><div class="chip-group" id="processChips"></div></div>
+            <div class="field"><label for="processOther">Industrialisation — autre (préciser)</label><input id="processOther" name="processOther" maxlength="250" placeholder="Autre procédé ou moyen…" /></div>
+            <div class="field"><label>Préparation de surface</label><div class="chip-group" id="surfaceChips"></div></div>
+            <div class="field"><label for="surfaceOther">Préparation de surface — autre (préciser)</label><input id="surfaceOther" name="surfaceOther" maxlength="250" placeholder="Autre préparation…" /></div>
+            <div class="field"><label for="technicalNotes">Autres précisions techniques</label><textarea id="technicalNotes" name="technicalNotes" rows="2" placeholder="Points de vigilance, limites, validation, questions ouvertes…"></textarea></div>
+          </div>
+        </details>
         <div class="editor-footer"><button type="button" class="btn btn-danger-ghost" id="deleteEntry">Supprimer cette fiche</button><button type="button" class="btn btn-primary" id="finishEdit">Terminer la visite <span>↗</span></button></div>
       </form>
       <div class="bottom-space"></div>
